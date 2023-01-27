@@ -9,6 +9,12 @@ router.get('/', function(req, res, next) {
   });
 });
 
+router.get('/login', function(req, res, next) {
+  res.render('login', {
+    title: 'ClydeMusic4All',
+  });
+});
+
 router.post('/newUSer', async (req, res) => {
   const { username, password } = req.body;
   try {
