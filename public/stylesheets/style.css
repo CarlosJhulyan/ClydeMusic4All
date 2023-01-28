@@ -1,8 +1,10 @@
 body {
-  padding: 20px;
+  padding: 0px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
-
 a {
   color: #00B7FF;
+}
+.background-1{
+  background-image: radial-gradient(circle at 50% 50%, #342c71 0, #1f1f59 50%, #091242 100%);
 }
