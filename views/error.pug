@@ -1,13 +1,6 @@
 extends layout
 
-mixin person(name)
-  li #{name}'s Pug source code!
-
 block content
   h1= message
   h2= error.status
   pre #{error.stack}
-  div
-    ul
-      each name in ['Jhulyan', 'Waldir', 'Ander', 'John', 'Victor']
-        +person(name)
