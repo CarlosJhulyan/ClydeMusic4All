@@ -101,3 +101,12 @@ a {
   display: flex;
   flex-wrap: wrap;
 }
+
+/*scroll tables*/
+.my-custom-scrollbar{
+  height: 90vh;
+  overflow: auto;
+  }
+.table-wrapper-scroll-y{
+  display: block;
+}
