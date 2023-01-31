@@ -23,6 +23,12 @@ router.get('/login', function(req, res, next) {
   res.render('login');
 });
 
+router.get('/sign-out', function(req, res, next) {
+  localStorage.removeItem('password');
+  localStorage.removeItem('username');
+  res.redirect('/login');
+});
+
 router.post('/sign-in', async (req, res) => {
   const { user, password } = req.body;
 
@@ -40,7 +46,7 @@ router.post('/sign-in', async (req, res) => {
   }
 });
 
-router.post('/newUSer', async (req, res) => {
+router.post('/newUser', async (req, res) => {
   const { username, password } = req.body;
   try {
     //const dat = await sequelize.query('EXEC dbo.createNewUser \'' + username + '\',' + '\'' + password +  '\';');
@@ -56,12 +62,6 @@ router.post('/newUSer', async (req, res) => {
       res.send(e.message).status(203);
     });
   }
-});
-
-router.get('/dashboard', (req, res) => {
-  res.render('index', {
-    title: 'Bienvenido',
-  });
 });
 
 router.get('/databases', async (req, res) => {
@@ -92,5 +92,42 @@ router.get('/databases', async (req, res) => {
     });
   }
 });
+
+router.get('/users', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+
+  try {
+    const users = await sequelize(username, password)
+      .query(
+        `select * from sys.sql_logins`
+        , {
+          type: QueryTypes.SELECT,
+        });
+
+    const dataFormat = users.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+      modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
+    }));
+    console.log(dataFormat);
+
+    res.render('users', {
+      title: 'Lista de Usuarios',
+      users: dataFormat || [],
+    });
+  } catch (e) {
+    res.render('users', {
+      title: 'Lista de Usuarios',
+      message: e.message,
+    });
+  }
+});
+
+router.get('/dashboard', async (req, res) => {
+  return res.render('index', {
+    title: 'Binenvenido'
+  });
+})
 
 module.exports = router;

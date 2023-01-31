@@ -1,0 +1,28 @@
+extends dashboard
+
+block main
+  h1=title
+  hr
+  table.table.table-striped.table-hover
+    thead
+      th Id
+      th Nombre
+      th Fecha Crea
+      th Fecha Modif
+      th Estado
+      th Acciones
+    tbody
+      each item, index in users
+        tr
+          td #{item.principal_id}
+          td #{item.name}
+          td #{item.create_date}
+          td #{item.modify_date}
+          td
+            div
+              span.form-check.form-switch
+                input.form-check-input(type='checkbox' role="switch" id=`#{item.principal_id}Switch` checked=!item.is_disabled)
+                label.form-check-label(for=`#{item.principal_id}Switch`)
+          td
+            div
+              button.btn.btn-primary.mx-1 Cambiar Contraseña
