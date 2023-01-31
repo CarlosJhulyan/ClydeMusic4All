@@ -15,6 +15,12 @@ router.get('/login', function(req, res, next) {
   });
 });
 
+router.get('/Dashboard', function(req, res, next) {
+  res.render('Dashboard', {
+    title: 'ClydeMusic4All',
+  });
+});
+
 router.post('/newUSer', async (req, res) => {
   const { username, password } = req.body;
   try {
