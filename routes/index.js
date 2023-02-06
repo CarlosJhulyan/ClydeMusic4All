@@ -19,8 +19,13 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+
 router.get('/login', function(req, res, next) {
   res.render('login');
+});
+
+router.get('/changePassword', function(req, res, next) {
+  res.render('changePassword');
 });
 
 router.get('/sign-out', function(req, res, next) {
@@ -28,6 +33,8 @@ router.get('/sign-out', function(req, res, next) {
   localStorage.removeItem('username');
   res.redirect('/login');
 });
+
+
 
 router.post('/sign-in', async (req, res) => {
   const { user, password } = req.body;
@@ -142,11 +149,14 @@ router.get('/users', async (req, res) => {
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
       modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
     }));
-    console.log(dataFormat);
+    //console.log(dataFormat);
 
     res.render('users', {
       title: 'Lista de Usuarios',
       users: dataFormat || [],
+      navigatePassword: (name) =>{
+        res.redirect('/users/changePassword/'+name)
+      }
     });
   } catch (e) {
     res.render('users', {
@@ -158,9 +168,50 @@ router.get('/users', async (req, res) => {
 
 router.get('/dashboard', async (req, res) => {
   return res.render('index', {
-    title: 'Binenvenido'
+    title: 'Bienvenido'
+  });
+});
+
+router.get('/usersToDatabase/:name', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { name }  = req.params;
+
+  try {
+    const users = await sequelize(username, password, name).query(`select * from sys.database_principals where type_desc='SQL_USER'`, {
+      type: QueryTypes.SELECT,
+    });
+    
+    const dataFormat = users.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+      modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
+    }));
+
+    return res.render('usersToDatabase', {
+      title: 'Usuarios de ' + name,
+      users: dataFormat || [],
+    });
+  } catch (error) {
+    console.log(error);
+    res.render('usersToDatabase', {
+      title: 'Lista de Usuarios',
+      message: error.message,
+    });
+  }
+});
+
+router.get('/users/changePassword/:name', async (req, res) => {
+  const name=req.params.name
+  return res.render('changePassword', {
+    title: 'Cambiar contraseña de '+ name,
+    name:name
   });
 })
+
+
+
+
 
 module.exports = router;
 

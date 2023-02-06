@@ -1,7 +1,7 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = (username, password) => {
-    const connection = new Sequelize('Chinook', username, password, {
+const sequelize = (username, password,database='Chinook') => {
+    const connection = new Sequelize(database, username, password, {
         dialect: 'mssql',
         port: 1433,
         pool: {

@@ -20,6 +20,5 @@ block main
             td #{item.state_desc}
             td
               div
-                a(href='/showDatabase/'+item.name) Ingresar
-                //button#ingresar.btn.btn-primary.mx-1 Ingresar
-                button#accesos.btn.btn-primary.mx-1 Accesos
+                a.btn.btn-primary.mx-1(href='/showDatabase/'+item.name) Ingresar
+                a.btn.btn-primary.mx-1(href="/usersToDatabase/"+item.name) Accesos
