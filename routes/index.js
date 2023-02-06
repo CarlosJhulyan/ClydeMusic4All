@@ -41,12 +41,14 @@ router.post('/sign-in', async (req, res) => {
 
   try {
     await sequelize(user, password).authenticate();
+    
     localStorage.setItem('username', user);
     localStorage.setItem('password', password);
     return res.render('index', {
       title: 'Ingreso exitoso'
     });
   } catch (e) {
+    
     return res.render('login', {
       error: e.message,
     });
