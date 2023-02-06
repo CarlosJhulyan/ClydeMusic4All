@@ -95,6 +95,36 @@ router.get('/databases', async (req, res) => {
   }
 });
 
+router.get('/showDatabase/:name', async (req, res)=>{
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const {name} = req.params
+  try{
+    const tables = await sequelize(username, password, name)
+      .query(
+        `SELECT * FROM sys.tables`
+        , {
+          type: QueryTypes.SELECT,
+        });
+
+    const dataFormat = tables.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+      modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
+    }));
+    res.render('showDatabase', {
+      title: name,
+      tables: dataFormat || [],
+    });
+  }
+  catch(e){
+    res.render('showDatabase', {
+      title: name,
+      message: 'No tiene permitido el ingreso',
+    });
+  }
+})
+
 router.get('/users', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
@@ -133,3 +163,4 @@ router.get('/dashboard', async (req, res) => {
 })
 
 module.exports = router;
+
