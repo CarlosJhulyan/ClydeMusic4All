@@ -105,7 +105,7 @@ router.get('/databases', async (req, res) => {
 router.get('/showDatabase/:name', async (req, res)=>{
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
-  const {name} = req.params
+  const {name} = req.params;
   try{
     const tables = await sequelize(username, password, name)
       .query(
@@ -113,7 +113,7 @@ router.get('/showDatabase/:name', async (req, res)=>{
         , {
           type: QueryTypes.SELECT,
         });
-
+    
     const dataFormat = tables.map(item => ({
       ...item,
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
@@ -128,6 +128,43 @@ router.get('/showDatabase/:name', async (req, res)=>{
     res.render('showDatabase', {
       title: name,
       message: 'No tiene permitido el ingreso',
+    });
+  }
+})
+
+router.get('/table/:name', async (req, res)=>{
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const {name} = req.params;
+  try{
+    const tableName = name;
+    const headers = await sequelize(username, password, name)
+      .query(
+        `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = 'dbo'
+         AND TABLE_NAME = '${name}'
+         ORDER BY ORDINAL_POSITION`
+         ,{
+          type: QueryTypes.SELECT,
+        });
+    console.log(headers);
+    const tables = await sequelize(username, password, name)
+      .query(
+        `SELECT * FROM ${name}`
+        , {
+          type: QueryTypes.SELECT,
+        });
+    res.render('table', {
+      title: name,
+      header: headers || [],
+      tables: tables || [],
+    });
+  }
+  catch(e){
+    console.log(e);
+    res.render('table', {
+      title: name,
+      message: e.message,
     });
   }
 })
