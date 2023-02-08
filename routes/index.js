@@ -23,10 +23,28 @@ router.get('/', async (req, res, next) => {
 router.get('/login', function(req, res, next) {
   res.render('login');
 });
-
-router.put('/changePassword', function(req, res, next) {
-  res.render('changePassword');
+//faltaaaaaaa
+router.put('/changePassword', async (req, res) => {
+  const { user, newpassword } = req.body;
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  try {
+    await sequelize(username, password).query(
+      `ALTER LOGIN [${user}] WITH PASSWORD = '${newpassword}';`,
+      {
+        type: QueryTypes.UPDATE,
+      });
+    return res.send({
+      message: 'contraseña cambiada correctamente',
+    });
+  } catch (e) {
+    return res.send({
+      error: e.message,
+    });
+  }
 });
+
+
 
 router.get('/sign-out', function(req, res, next) {
   localStorage.removeItem('password');
@@ -189,7 +207,7 @@ router.get('/users', async (req, res) => {
     //console.log(dataFormat);
 
     res.render('users', {
-      title: 'Lista de Usuarios',
+      title: 'Lista de Logins',
       users: dataFormat || [],
       navigatePassword: (name) =>{
         res.redirect('/users/changePassword/'+name)
@@ -197,7 +215,7 @@ router.get('/users', async (req, res) => {
     });
   } catch (e) {
     res.render('users', {
-      title: 'Lista de Usuarios',
+      title: 'Lista de Logins',
       message: e.message,
     });
   }
@@ -229,6 +247,7 @@ router.get('/usersToDatabase/:name', async (req, res) => {
     return res.render('usersToDatabase', {
       title: 'Usuarios de ' + name,
       users: dataFormat || [],
+      name: name,
     });
   } catch (error) {
     console.log(error);
@@ -238,21 +257,129 @@ router.get('/usersToDatabase/:name', async (req, res) => {
     });
   }
 });
-router.get('/permisosUsers', async (req, res) => {
-  const name=req.params.name
-  return res.render('permisosUsers', {
-    title: 'Cambiar contraseña de '+ name,
-    name:name
-  });
+router.get('/permissionsUser', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { database, user } = req.query;
+
+  try {
+    const permissions = await sequelize(username, password, database)
+      .query(
+        `
+        SELECT 
+          OBJECT_NAME(major_id) AS TableName, 
+          user_name(grantee_principal_id) AS UserName, 
+          permission_name AS Permission
+        FROM 
+            sys.database_permissions
+        WHERE 
+            class = 1 
+            AND minor_id = 0 
+            AND OBJECT_NAME(major_id) IS NOT NULL
+            AND user_name(grantee_principal_id) = '${user}'
+        ORDER BY 
+            TableName, UserName, Permission
+        `, {
+          type: QueryTypes.SELECT,
+        });
+        
+    const tables = await sequelize(username, password, database)
+      .query(
+        `SELECT * FROM sys.tables`
+        , {
+          type: QueryTypes.SELECT,
+        });
+        
+    const tablesFormat = tables.map(item => {
+      const update = permissions.some(x => x.TableName === item.name && x.Permission === 'UPDATE');
+      const remove = permissions.some(x => x.TableName === item.name && x.Permission === 'DELETE');
+      const select = permissions.some(x => x.TableName === item.name && x.Permission === 'SELECT');
+      
+      return {
+        ...item,
+        update: !update,
+        select: !select,
+        delete: !remove,
+      }
+    });
+    return res.render('permissionsUser', {
+      title: 'Permisos de '+ user,
+      tables: tablesFormat || [],
+      permissions: permissions || [],
+      database,
+      user,
+    });
+  } catch (error) {
+    return res.render('permissionsUser', {
+      title: 'Permisos de '+ user,
+      message: error.message,
+    });
+  }
 })
 
 router.get('/changePassword/:name', async (req, res) => {
   const name=req.params.name
   return res.render('changePassword', {
     title: 'Cambiar contraseña de '+ name,
-    name:name
+    name: name
   });
-})
+});
+
+router.get('/insertPermission', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { database, user, type, table } = req.query;
+
+  try {
+    await sequelize(username, password)
+      .query(`
+        EXEC dbo.newPermissionUser
+        @type = '${type}',
+        @table = '${table}',
+        @user = '${user}',
+        @database = '${database}'
+      `, {
+        type: QueryTypes.UPDATE,
+      });
+    return res.redirect(`/permissionsUser?database=${database}&user=${user}`);
+  } catch(e) {
+    return res.render('permissionsUser', {
+      title: 'Permisos de '+ user,
+      message: e.message,
+    });
+  }
+});
+
+router.get('/deletePermission', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { database, user, type, table } = req.query;
+
+  try {
+    await sequelize(username, password)
+      .query(`
+        EXEC dbo.deletePermissionUser
+        @type = '${type}',
+        @table = '${table}',
+        @user = '${user}',
+        @database = '${database}'
+      `, {
+        type: QueryTypes.UPDATE,
+      });
+    return res.redirect(`/permissionsUser?database=${database}&user=${user}`);
+  } catch(e) {
+    return res.render('permissionsUser', {
+      title: 'Permisos de '+ user,
+      message: e.message,
+    });
+  }
+});
+
+router.get('/assignDatabase/:name', function(req, res, next) {
+  res.render('assignDatabase', {
+    title: 'Asignar databse'
+  });
+});
 
 module.exports = router;
 
