@@ -26,8 +26,4 @@ block main
                   label.form-check-label(for=`#{item.principal_id}Switch`)
             td
               div
-                //button.btn.btn-primary.mx-1(href="/users/changePassword/") Cambiar Contraseña
-                //button.btn.btn-primary.mx-1(onclick='authenticate(\'' + item.name + '\')') Cambiar Contraseña
-
-                button.btn.btn-primary.mx-1 
-                  a(href='/changePassword/'+item.name) Cambiar contraseña
+                a.btn.btn-primary.mx-1(href='/changePassword/'+item.name) Cambiar contraseña

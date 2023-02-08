@@ -24,7 +24,7 @@ router.get('/login', function(req, res, next) {
   res.render('login');
 });
 
-router.get('/changePassword', function(req, res, next) {
+router.put('/changePassword', function(req, res, next) {
   res.render('changePassword');
 });
 
@@ -127,7 +127,7 @@ router.get('/showDatabase/:name', async (req, res)=>{
   catch(e){
     res.render('showDatabase', {
       title: name,
-      message: 'No tiene permitido el ingreso',
+      message: e.message,
     });
   }
 })
@@ -201,7 +201,7 @@ router.get('/usersToDatabase/:name', async (req, res) => {
   }
 });
 
-router.get('/users/changePassword/:name', async (req, res) => {
+router.get('/changePassword/:name', async (req, res) => {
   const name=req.params.name
   return res.render('changePassword', {
     title: 'Cambiar contraseña de '+ name,
