@@ -117,3 +117,11 @@ a {
 }
 
 */
+.principal{
+  max-height: 560px;
+  overflow: hidden;
+}
+.ocultaTabla{
+  overflow: scroll;
+  max-height: 95%;
+}
