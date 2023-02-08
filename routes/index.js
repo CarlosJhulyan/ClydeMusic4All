@@ -237,6 +237,13 @@ router.get('/usersToDatabase/:name', async (req, res) => {
     });
   }
 });
+router.get('/permisosUsers', async (req, res) => {
+  const name=req.params.name
+  return res.render('permisosUsers', {
+    title: 'Cambiar contraseña de '+ name,
+    name:name
+  });
+})
 
 router.get('/changePassword/:name', async (req, res) => {
   const name=req.params.name
