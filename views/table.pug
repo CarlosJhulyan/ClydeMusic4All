@@ -11,10 +11,10 @@ block main
         thead
           tr
             each row in headers
-              th=row
+              th=row.COLUMN_NAME
         tbody
           each row in tables
             tr
               each celda in row
-                td = celda
+                td=celda
           

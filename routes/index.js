@@ -106,6 +106,7 @@ router.get('/showDatabase/:name', async (req, res)=>{
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
   const {name} = req.params;
+
   try{
     const tables = await sequelize(username, password, name)
       .query(
@@ -132,38 +133,37 @@ router.get('/showDatabase/:name', async (req, res)=>{
   }
 })
 
-router.get('/table/:name', async (req, res)=>{
+router.get('/table', async (req, res)=>{
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
-  const {name} = req.params;
+  const { database, table } = req.query;
+
   try{
-    const tableName = name;
-    const headers = await sequelize(username, password, name)
+    const headers = await sequelize(username, password, database)
       .query(
         `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
          WHERE TABLE_SCHEMA = 'dbo'
-         AND TABLE_NAME = '${name}'
+         AND TABLE_NAME = '${table}'
          ORDER BY ORDINAL_POSITION`
          ,{
           type: QueryTypes.SELECT,
         });
-    console.log(headers);
-    const tables = await sequelize(username, password, name)
-      .query(
-        `SELECT * FROM ${name}`
-        , {
+
+    const tables = await sequelize(username, password, database)
+      .query(`SELECT * FROM ${table}`, {
           type: QueryTypes.SELECT,
         });
+
     res.render('table', {
-      title: name,
-      header: headers || [],
+      title: database,
+      headers: headers || [],
       tables: tables || [],
     });
   }
   catch(e){
     console.log(e);
     res.render('table', {
-      title: name,
+      title: database,
       message: e.message,
     });
   }
@@ -215,9 +215,10 @@ router.get('/usersToDatabase/:name', async (req, res) => {
   const { name }  = req.params;
 
   try {
-    const users = await sequelize(username, password, name).query(`select * from sys.database_principals where type_desc='SQL_USER'`, {
-      type: QueryTypes.SELECT,
-    });
+    const users = await sequelize(username, password, name)
+      .query(`select * from sys.database_principals where type_desc='SQL_USER'`, {
+        type: QueryTypes.SELECT,
+      });
     
     const dataFormat = users.map(item => ({
       ...item,
@@ -245,10 +246,6 @@ router.get('/changePassword/:name', async (req, res) => {
     name:name
   });
 })
-
-
-
-
 
 module.exports = router;
 
