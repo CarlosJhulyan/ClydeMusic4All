@@ -1,0 +1,20 @@
+extends dashboard
+
+block main
+  h1=title
+  hr
+  div.my-custom-scrollbar.table-wrapper-scroll-y
+    if message
+      div.alert.alert-danger(role='alert') #{message}
+    else
+      table.table.table-striped.table-hover
+        thead
+          tr
+            each row in headers
+              th=row
+        tbody
+          each row in tables
+            tr
+              each celda in row
+                td = celda
+          

@@ -2,7 +2,6 @@ extends dashboard
 
 block main
   h1=title
-  hr
   div.my-custom-scrollbar.table-wrapper-scroll-y
     if message
       div.alert.alert-danger(role='alert') #{message}
@@ -20,3 +19,6 @@ block main
               td #{item.name}
               td #{item.create_date}
               td #{item.modify_date}
+              td
+                div
+                  a.btn.btn-primary.mx-1(href='/table/'+item.name) Ver
