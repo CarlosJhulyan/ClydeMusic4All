@@ -229,6 +229,36 @@ router.get('/users', async (req, res) => {
   }
 });
 
+router.get('/assignDatabase/:name', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+
+
+  try {
+    const databases = await sequelize(username, password)
+      .query(
+        `select * from sys.databases order by create_date desc`
+        , {
+          type: QueryTypes.SELECT,
+        });
+
+    const dataFormat = databases.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+    }));
+    console.log(dataFormat);
+    res.render('assignDatabase', {
+      title: 'lista de Bases de datos',
+      databases: dataFormat || [],
+    });
+  } catch (e) {
+    res.render('assignDatabase', {
+      title: 'lista de Bases de datos',
+      message: e.message,
+    });
+  }
+});
+
 router.get('/dashboard', async (req, res) => {
   return res.render('index', {
     title: 'Bienvenido'
