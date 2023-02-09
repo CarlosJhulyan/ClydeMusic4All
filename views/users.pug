@@ -25,9 +25,9 @@ block main
               td
                 div
                   span.form-check.form-switch
-                    input.form-check-input(type='checkbox' role="switch" id=`#{item.principal_id}Switch` checked=!item.is_disabled)
+                    input.form-check-input(type='checkbox' role="switch" id=`#{item.principal_id}Switch` checked=!item.is_disabled onclick)
                     label.form-check-label(for=`#{item.principal_id}Switch`)
               td
                 div
-                  a.btn.btn-primary.mx-1(href='/changePassword/'+item.name) Cambiar contraseña
-                  a.btn.btn-primary.mx-1(href='/assignDatabase/'+item.name) Asignar DB
+                  a.btn.btn-primary.mx-1(href='/changePassword?name='+item.name) Cambiar contraseña
+                  a.btn.btn-primary.mx-1(href='/assignDatabase?name='+item.name) Asignar DB

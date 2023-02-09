@@ -20,25 +20,30 @@ router.get('/', async (req, res, next) => {
 });
 
 
-router.get('/login', function(req, res, next) {
+router.get('/login', function(req, res) {
   res.render('login');
 });
-//faltaaaaaaa
-router.put('/changePassword', async (req, res) => {
+
+router.post('/changePassword', async (req, res) => {
   const { user, newpassword } = req.body;
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
+  
   try {
     await sequelize(username, password).query(
       `ALTER LOGIN [${user}] WITH PASSWORD = '${newpassword}';`,
       {
         type: QueryTypes.UPDATE,
       });
-    return res.send({
-      message: 'contraseña cambiada correctamente',
+    return res.render('changePassword', {
+      title: 'Cambiar contraseña de '+ user,
+      name: user,
+      success: 'Contraseña cambiada correctamente'
     });
   } catch (e) {
-    return res.send({
+    return res.render('changePassword', {
+      title: 'Cambiar contraseña de '+ user,
+      name: user,
       error: e.message,
     });
   }
@@ -46,13 +51,11 @@ router.put('/changePassword', async (req, res) => {
 
 
 
-router.get('/sign-out', function(req, res, next) {
+router.get('/sign-out', function(req, res) {
   localStorage.removeItem('password');
   localStorage.removeItem('username');
   res.redirect('/login');
 });
-
-
 
 router.post('/sign-in', async (req, res) => {
   const { user, password } = req.body;
@@ -76,7 +79,6 @@ router.post('/sign-in', async (req, res) => {
 router.post('/newUser', async (req, res) => {
   const { username, password } = req.body;
   try {
-    //const dat = await sequelize.query('EXEC dbo.createNewUser \'' + username + '\',' + '\'' + password +  '\';');
     const dat = await sequelize('Jhulyan', 'CJdeveloper%989%').query('select * from dbo.Artist');
     res.send({
       data: dat,
@@ -317,8 +319,8 @@ router.get('/permissionsUser', async (req, res) => {
   }
 })
 
-router.get('/changePassword/:name', async (req, res) => {
-  const name=req.params.name
+router.get('/changePassword', async (req, res) => {
+  const {name} = req.query;
   return res.render('changePassword', {
     title: 'Cambiar contraseña de '+ name,
     name: name
