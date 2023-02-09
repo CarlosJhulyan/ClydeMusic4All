@@ -19,4 +19,8 @@ block main
               td #{item.name}
               td
                 div
-                  a.btn.btn-primary.mx-1(href='#') Asignar
+                  a.btn.btn-primary.mx-1(href='/assignDatabaseAction?user='+user+'&database='+item.name) Asignar
+  if success
+      div.alert.alert-success(role='alert') #{success}
+  if error
+      div.alert.alert-error(role='alert') #{error}

@@ -206,7 +206,6 @@ router.get('/users', async (req, res) => {
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
       modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
     }));
-    //console.log(dataFormat);
 
     res.render('users', {
       title: 'Lista de Logins',
@@ -223,10 +222,10 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/assignDatabase/:name', async (req, res) => {
+router.get('/assignDatabase', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
-
+  const { name } = req.query;
 
   try {
     const databases = await sequelize(username, password)
@@ -240,15 +239,17 @@ router.get('/assignDatabase/:name', async (req, res) => {
       ...item,
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
     }));
-    console.log(dataFormat);
+    
     res.render('assignDatabase', {
-      title: 'lista de Bases de datos',
+      title: 'Lista de Bases de datos',
       databases: dataFormat || [],
+      user: name,
     });
   } catch (e) {
     res.render('assignDatabase', {
-      title: 'lista de Bases de datos',
+      title: 'Lista de Bases de datos',
       message: e.message,
+      user: name,
     });
   }
 });
@@ -407,10 +408,39 @@ router.get('/deletePermission', async (req, res) => {
   }
 });
 
-router.get('/assignDatabase/:name', function(req, res, next) {
-  res.render('assignDatabase', {
-    title: 'Asignar databse'
-  });
+router.get('/assignDatabaseAction', async function(req, res) {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { database, user } = req.query;
+
+  try {
+    await sequelize(username, password, database).query(
+      `CREATE USER ${user} FOR LOGIN ${user}`
+    );
+
+    const databases = await sequelize(username, password)
+      .query(
+        `select * from sys.databases order by create_date desc`
+        , {
+          type: QueryTypes.SELECT,
+        });
+
+    const dataFormat = databases.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+    }));
+
+    return res.render('assignDatabase', {
+      title: 'Lista de Bases de datos',
+      databases: dataFormat || [],
+      success: 'Se asigno correctamente la BD',
+    });
+  } catch (e) {
+    return res.render('assignDatabase', {
+      title: 'Lista de Bases de datos',
+      message: e.message,
+    });
+  }
 });
 
 module.exports = router;
