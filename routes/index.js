@@ -73,20 +73,28 @@ router.post('/sign-in', async (req, res) => {
   }
 });
 
-router.post('/newUser', async (req, res) => {
-  const { username, password } = req.body;
+router.post('/newUsers', async (req, res) => {
+  const { newUser, newPassword } = req.body;
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  console.log(newUser)
   try {
-    //const dat = await sequelize.query('EXEC dbo.createNewUser \'' + username + '\',' + '\'' + password +  '\';');
-    const dat = await sequelize('Jhulyan', 'CJdeveloper%989%').query('select * from dbo.Artist');
-    res.send({
-      data: dat,
-      message: 'Se creo correctamente el usuario',
-    });
+    await sequelize(username, password)
+      .query(`
+        CREATE LOGIN ${newUser} WITH PASSWORD = '${newPassword}';
+      `);
+    await sequelize(username, password, 'Chinook')
+      .query(`
+        CREATE USER ${newUser} FOR LOGIN ${newUser};
+      `);
+      return res.render('newUsers', {
+        title: 'Nuevo usuario ',
+        success: 'Usuario creado correctamente',
+      });
   } catch (e) {
-    translate(e.message, {to: 'es',from: 'en'}).then(response => {
-      res.send(response.text).status(203);
-    }).catch(err => {
-      res.send(e.message).status(203);
+    return res.render('newUsers', {
+      title: 'Nuevo usuario ',
+      error: e.message,
     });
   }
 });
@@ -378,6 +386,12 @@ router.get('/deletePermission', async (req, res) => {
 router.get('/assignDatabase/:name', function(req, res, next) {
   res.render('assignDatabase', {
     title: 'Asignar databse'
+  });
+});
+
+router.get('/newUsers/', async (req, res) => {
+  return res.render('newUsers', {
+    title: 'Nuevo usuario ',
   });
 });
 
