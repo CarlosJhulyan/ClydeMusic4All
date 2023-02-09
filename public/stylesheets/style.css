@@ -122,3 +122,8 @@ a {
   overflow-y: auto;
   overflow-x: hidden;
 }
+.add{
+  display: flex;
+  justify-content: space-between;
+}
+
