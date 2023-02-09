@@ -122,8 +122,11 @@ a {
   overflow-y: auto;
   overflow-x: hidden;
 }
+<<<<<<< HEAD
 .add{
   display: flex;
   justify-content: space-between;
 }
 
+=======
+>>>>>>> dfc51c6bd6fb9320b6c3684847c0a9a13fee87d9
