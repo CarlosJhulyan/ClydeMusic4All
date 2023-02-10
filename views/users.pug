@@ -10,7 +10,7 @@ block main
       div.alert.alert-danger(role='alert') #{error}
     else if message
       div.alert.alert-danger(role='alert') #{message}
-      button(type='button' class='btn btn-' + btnType + ' btn-' + btnSize)
+      //button(type='button' class='btn btn-' + btnType + ' btn-' + btnSize)
     else
       table.table.table-striped.table-hover
         thead
@@ -36,4 +36,5 @@ block main
               td
                 div
                   a.btn.btn-primary.mx-1(href='/changePassword?name='+item.name) Cambiar contraseña
+                  a.btn.btn-primary.mx-1(href='/rolesUsers?name='+item.name) Roles
                   a.btn.btn-primary.mx-1(href='/assignDatabase?name='+item.name) Asignar DB
