@@ -35,6 +35,8 @@ block main
                     td #{item.name}
                     td
                       div
+                        if item.insert
+                          a.btn.btn-primary.mx-1(href='/insertPermission?database='+database+'&user='+user+'&table='+item.name+'&type=INSERT') INSERT
                         if item.select
                           a.btn.btn-info.mx-1(href='/insertPermission?database='+database+'&user='+user+'&table='+item.name+'&type=SELECT') SELECT
                         if item.update

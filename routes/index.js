@@ -230,9 +230,11 @@ router.get('/table', async (req, res)=>{
         });
 
     res.render('table', {
-      title: database,
+      title: table,
       headers: headers || [],
       tables: tables || [],
+      database,
+      table,
     });
   }
   catch(e){
@@ -377,17 +379,19 @@ router.get('/permissionsUser', async (req, res) => {
         , {
           type: QueryTypes.SELECT,
         });
-        
+    
     const tablesFormat = tables.map(item => {
       const update = permissions.some(x => x.TableName === item.name && x.Permission === 'UPDATE');
       const remove = permissions.some(x => x.TableName === item.name && x.Permission === 'DELETE');
       const select = permissions.some(x => x.TableName === item.name && x.Permission === 'SELECT');
+      const insert = permissions.some(x => x.TableName === item.name && x.Permission === 'INSERT');
       
       return {
         ...item,
         update: !update,
         select: !select,
         delete: !remove,
+        insert: !insert,
       }
     });
     return res.render('permissionsUser', {
@@ -502,6 +506,45 @@ router.get('/newUsers/', async (req, res) => {
   return res.render('newUsers', {
     title: 'Nuevo usuario ',
   });
+});
+
+router.get('/deleteRow', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { title, data, database, table } = req.query;
+
+  try {
+    await sequelize(username, password, database)
+      .query(`DELETE FROM ${table} WHERE ${title} = ${data}`);
+
+      const headers = await sequelize(username, password, database)
+        .query(
+          `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = 'dbo'
+          AND TABLE_NAME = '${table}'
+          ORDER BY ORDINAL_POSITION`
+         ,{
+          type: QueryTypes.SELECT,
+        });
+
+      const tables = await sequelize(username, password, database)
+        .query(`SELECT * FROM ${table}`, {
+          type: QueryTypes.SELECT,
+        });
+
+    return res.render('table', {
+      title: table,
+      headers: headers || [],
+      tables: tables || [],
+      database,
+      table,
+      success: 'Se eliminó correctamente',
+    })
+  } catch (error) {
+    return res.render('table', {
+      error: error.message
+    })
+  }
 });
 
 module.exports = router;
