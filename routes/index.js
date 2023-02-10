@@ -132,10 +132,10 @@ router.post('/newUsers', async (req, res) => {
     .query(`
       CREATE LOGIN ${newUser} WITH PASSWORD = '${newPassword}';
     `);
-  await sequelize(username, password, 'Chinook')
-    .query(`
-      CREATE USER ${newUser} FOR LOGIN ${newUser};
-    `);
+    // await sequelize(username, password)
+    //   .query(`
+    //     CREATE USER ${newUser} FOR LOGIN ${newUser};
+    //   `);
     return res.render('newUsers', {
       title: 'Nuevo usuario ',
       success: 'Usuario creado correctamente',
