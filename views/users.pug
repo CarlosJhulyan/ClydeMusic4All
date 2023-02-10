@@ -1,7 +1,10 @@
 extends dashboard
 
 block main
-  h1=title
+  div.add
+    h1=title
+    //a.btn.btn-primary.mx-1(href='/assignDatabase/'+item.name) ADD NEW USERS
+    a.btn.btn-primary(href='/newUsers/') ADD NEW USERS
   hr
   div.ocultaTabla
     if message
