@@ -1,13 +1,17 @@
 extends dashboard
 
 block main
-  h1=title
+  div.add
+    h1=title
+    //a.btn.btn-primary.mx-1(href='/assignDatabase/'+item.name) ADD NEW USERS
+    a.btn.btn-primary(href='/newUsers/') ADD NEW USERS
   hr
   div.ocultaTabla
     if error
       div.alert.alert-danger(role='alert') #{error}
     if message
       div.alert.alert-danger(role='alert') #{message}
+      button(type='button' class='btn btn-' + btnType + ' btn-' + btnSize)
     else
       table.table.table-striped.table-hover
         thead
@@ -30,10 +34,7 @@ block main
                     a.btn.btn-success.mx-1(name='active' href='/changeStatus?status=1'+'&user='+item.name) Desactivar
                   else 
                     a.btn.btn-secondary.mx-1(name='disable' href='/changeStatus?status=0'+'&user='+item.name) Activar
-                  //span.form-check.form-switch
-                    input.form-check-input(type='checkbox' role="switch" id=`#{item.principal_id}Switch` checked=!item.is_disabled)
-                    label.form-check-label(for=`#{item.principal_id}Switch`)
               td
                 div
-                  a.btn.btn-primary.mx-1(href='/changePassword/'+item.name) Cambiar contraseña
-                  a.btn.btn-primary.mx-1(href='/assignDatabase/'+item.name) Asignar DB
+                  a.btn.btn-primary.mx-1(href='/changePassword?name='+item.name) Cambiar contraseña
+                  a.btn.btn-primary.mx-1(href='/assignDatabase?name='+item.name) Asignar DB

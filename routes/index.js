@@ -20,25 +20,30 @@ router.get('/', async (req, res, next) => {
 });
 
 
-router.get('/login', function(req, res, next) {
+router.get('/login', function(req, res) {
   res.render('login');
 });
-//faltaaaaaaa
-router.put('/changePassword', async (req, res) => {
+
+router.post('/changePassword', async (req, res) => {
   const { user, newpassword } = req.body;
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
+  
   try {
     await sequelize(username, password).query(
       `ALTER LOGIN [${user}] WITH PASSWORD = '${newpassword}';`,
       {
         type: QueryTypes.UPDATE,
       });
-    return res.send({
-      message: 'contraseña cambiada correctamente',
+    return res.render('changePassword', {
+      title: 'Cambiar contraseña de '+ user,
+      name: user,
+      success: 'Contraseña cambiada correctamente'
     });
   } catch (e) {
-    return res.send({
+    return res.render('changePassword', {
+      title: 'Cambiar contraseña de '+ user,
+      name: user,
       error: e.message,
     });
   }
@@ -92,13 +97,11 @@ router.get('/changeStatus', async (req, res) => {
   }
 });
 
-router.get('/sign-out', function(req, res, next) {
+router.get('/sign-out', function(req, res) {
   localStorage.removeItem('password');
   localStorage.removeItem('username');
   res.redirect('/login');
 });
-
-
 
 router.post('/sign-in', async (req, res) => {
   const { user, password } = req.body;
@@ -119,20 +122,28 @@ router.post('/sign-in', async (req, res) => {
   }
 });
 
-router.post('/newUser', async (req, res) => {
-  const { username, password } = req.body;
+router.post('/newUsers', async (req, res) => {
+  const { newUser, newPassword } = req.body;
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  console.log(newUser)
   try {
-    //const dat = await sequelize.query('EXEC dbo.createNewUser \'' + username + '\',' + '\'' + password +  '\';');
-    const dat = await sequelize('Jhulyan', 'CJdeveloper%989%').query('select * from dbo.Artist');
-    res.send({
-      data: dat,
-      message: 'Se creo correctamente el usuario',
+    await sequelize(username, password)
+    .query(`
+      CREATE LOGIN ${newUser} WITH PASSWORD = '${newPassword}';
+    `);
+  await sequelize(username, password, 'Chinook')
+    .query(`
+      CREATE USER ${newUser} FOR LOGIN ${newUser};
+    `);
+    return res.render('newUsers', {
+      title: 'Nuevo usuario ',
+      success: 'Usuario creado correctamente',
     });
   } catch (e) {
-    translate(e.message, {to: 'es',from: 'en'}).then(response => {
-      res.send(response.text).status(203);
-    }).catch(err => {
-      res.send(e.message).status(203);
+    return res.render('newUsers', {
+      title: 'Nuevo usuario ',
+      error: e.message,
     });
   }
 });
@@ -250,7 +261,6 @@ router.get('/users', async (req, res) => {
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
       modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
     }));
-    //console.log(dataFormat);
 
     res.render('users', {
       title: 'Lista de Logins',
@@ -267,10 +277,10 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/assignDatabase/:name', async (req, res) => {
+router.get('/assignDatabase', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
-
+  const { name } = req.query;
 
   try {
     const databases = await sequelize(username, password)
@@ -284,15 +294,17 @@ router.get('/assignDatabase/:name', async (req, res) => {
       ...item,
       create_date: moment(item.create_date).format('DD/MM/yyyy'),
     }));
-    console.log(dataFormat);
+    
     res.render('assignDatabase', {
-      title: 'lista de Bases de datos',
+      title: 'Lista de Bases de datos',
       databases: dataFormat || [],
+      user: name,
     });
   } catch (e) {
     res.render('assignDatabase', {
-      title: 'lista de Bases de datos',
+      title: 'Lista de Bases de datos',
       message: e.message,
+      user: name,
     });
   }
 });
@@ -393,8 +405,8 @@ router.get('/permissionsUser', async (req, res) => {
   }
 })
 
-router.get('/changePassword/:name', async (req, res) => {
-  const name=req.params.name
+router.get('/changePassword', async (req, res) => {
+  const {name} = req.query;
   return res.render('changePassword', {
     title: 'Cambiar contraseña de '+ name,
     name: name
@@ -451,9 +463,44 @@ router.get('/deletePermission', async (req, res) => {
   }
 });
 
-router.get('/assignDatabase/:name', function(req, res, next) {
-  res.render('assignDatabase', {
-    title: 'Asignar databse'
+router.get('/assignDatabaseAction', async function(req, res) {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { database, user } = req.query;
+
+  try {
+    await sequelize(username, password, database).query(
+      `CREATE USER ${user} FOR LOGIN ${user}`
+    );
+
+    const databases = await sequelize(username, password)
+      .query(
+        `select * from sys.databases order by create_date desc`
+        , {
+          type: QueryTypes.SELECT,
+        });
+
+    const dataFormat = databases.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+    }));
+
+    return res.render('assignDatabase', {
+      title: 'Lista de Bases de datos',
+      databases: dataFormat || [],
+      success: 'Se asigno correctamente la BD',
+    });
+  } catch (e) {
+    return res.render('assignDatabase', {
+      title: 'Lista de Bases de datos',
+      message: e.message,
+    });
+  }
+});
+
+router.get('/newUsers/', async (req, res) => {
+  return res.render('newUsers', {
+    title: 'Nuevo usuario ',
   });
 });
 
