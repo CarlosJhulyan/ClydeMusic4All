@@ -44,7 +44,53 @@ router.put('/changePassword', async (req, res) => {
   }
 });
 
-
+//activar cuenta
+router.get('/changeStatus', async (req, res) => {
+  const user = req.query.user;
+  const status = req.query.status;
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  
+  try {
+    if (status == 1) {//desactivar
+      await sequelize(username, password).query(
+        `ALTER LOGIN ${user} DISABLE`,
+        {
+          type: QueryTypes.UPDATE,
+        });
+    }else{//activar
+      await sequelize(username, password).query(
+        `ALTER LOGIN [${user}] ENABLE`,
+        {
+          type: QueryTypes.UPDATE,
+        });
+    }
+    const users = await sequelize(username, password)
+      .query(
+        `select * from sys.sql_logins`
+        , {
+          type: QueryTypes.SELECT,
+        });
+  
+    const dataFormat = users.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+      modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
+    }));
+    return res.render('users', {
+      title: 'Lista de Logins',
+      users: dataFormat || [],
+        navigatePassword: (name) =>{
+        res.redirect('/users/changePassword/'+name)
+        }
+    });
+  } catch (e) {
+    return res.render('users', {
+      title: 'Lista de Logins',
+      error: e.message
+    });
+  }
+});
 
 router.get('/sign-out', function(req, res, next) {
   localStorage.removeItem('password');

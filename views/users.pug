@@ -4,6 +4,8 @@ block main
   h1=title
   hr
   div.ocultaTabla
+    if error
+      div.alert.alert-danger(role='alert') #{error}
     if message
       div.alert.alert-danger(role='alert') #{message}
     else
@@ -19,12 +21,16 @@ block main
           each item, index in users
             tr
               td #{item.principal_id}
-              td #{item.name}
+              td(name=item.name) #{item.name}
               td #{item.create_date}
               td #{item.modify_date}
               td
                 div
-                  span.form-check.form-switch
+                  if !item.is_disabled 
+                    a.btn.btn-success.mx-1(name='active' href='/changeStatus?status=1'+'&user='+item.name) Desactivar
+                  else 
+                    a.btn.btn-secondary.mx-1(name='disable' href='/changeStatus?status=0'+'&user='+item.name) Activar
+                  //span.form-check.form-switch
                     input.form-check-input(type='checkbox' role="switch" id=`#{item.principal_id}Switch` checked=!item.is_disabled)
                     label.form-check-label(for=`#{item.principal_id}Switch`)
               td
