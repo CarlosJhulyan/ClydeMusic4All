@@ -49,7 +49,7 @@ router.post('/changePassword', async (req, res) => {
   }
 });
 
-//activar cuenta
+
 router.get('/changeStatus', async (req, res) => {
   const user = req.query.user;
   const status = req.query.status;
@@ -57,13 +57,13 @@ router.get('/changeStatus', async (req, res) => {
   const username = localStorage.getItem('username');
   
   try {
-    if (status == 1) {//desactivar
+    if (status == 1) {
       await sequelize(username, password).query(
         `ALTER LOGIN ${user} DISABLE`,
         {
           type: QueryTypes.UPDATE,
         });
-    }else{//activar
+    }else{
       await sequelize(username, password).query(
         `ALTER LOGIN [${user}] ENABLE`,
         {
@@ -347,6 +347,7 @@ router.get('/usersToDatabase/:name', async (req, res) => {
     });
   }
 });
+
 router.get('/permissionsUser', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
@@ -547,7 +548,7 @@ router.get('/deleteRow', async (req, res) => {
   }
 });
 
-router.get('/rolesUsers', async (req, res) => {
+router.get('/rolesUsersServer', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
   const { name } = req.query;
@@ -579,22 +580,22 @@ router.get('/rolesUsers', async (req, res) => {
 
     const rolesFormat = roles.filter(item => !rolesByUser.some(i => i.principal_id == item.Principal_ID));
     
-    return res.render('rolesUsers', {
-      title: 'Roles de ' + name,
+    return res.render('rolesUsersServer', {
+      title: 'Roles del servidor de ' + name,
       roles: rolesFormat || [],
       rolesBy: rolesByUser || [],
       user: name,
     });
   } catch (error) {
-    return res.render('rolesUsers', {
-      title: 'Roles de ' + name,
+    return res.render('rolesUsersServer', {
+      title: 'Roles del servidor de ' + name,
       message: error.message,
       user: name,
     });
   }
 });
 
-router.get('/deleteRol', async (req, res) => {
+router.get('/deleteRolServer', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
   const { user, rol } = req.query;
@@ -604,17 +605,17 @@ router.get('/deleteRol', async (req, res) => {
       .query(`ALTER SERVER ROLE ${rol} DROP MEMBER ${user}`, {
         type: QueryTypes.UPDATE,
       });
-    return res.redirect(`/rolesUsers?name=${user}`);
+    return res.redirect(`/rolesUsersServer?name=${user}`);
   } catch(e) {
-    return res.render('rolesUsers', {
-      title: 'Roles de ' + name,
+    return res.render('rolesUsersServer', {
+      title: 'Roles del servidor de ' + user,
       message: e.message,
       user: user,
     });
   }
 });
 
-router.get('/addRol', async (req, res) => {
+router.get('/addRolServer', async (req, res) => {
   const password = localStorage.getItem('password');
   const username = localStorage.getItem('username');
   const { user, rol } = req.query;
@@ -624,12 +625,131 @@ router.get('/addRol', async (req, res) => {
       .query(`ALTER SERVER ROLE ${rol} ADD MEMBER ${user}`, {
         type: QueryTypes.UPDATE,
       });
-    return res.redirect(`/rolesUsers?name=${user}`);
+    return res.redirect(`/rolesUsersServer?name=${user}`);
   } catch(e) {
-    return res.render('rolesUsers', {
-      title: 'Roles de ' + name,
+    return res.render('rolesUsersServer', {
+      title: 'Roles del servidor de ' + user,
       message: e.message,
       user: user,
+    });
+  }
+});
+
+router.get('/usersToRoles/:name', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { name }  = req.params;
+
+  try {
+    const users = await sequelize(username, password, name)
+      .query(`select * from sys.database_principals where type_desc='SQL_USER'`, {
+        type: QueryTypes.SELECT,
+      });
+    
+    const dataFormat = users.map(item => ({
+      ...item,
+      create_date: moment(item.create_date).format('DD/MM/yyyy'),
+      modify_date: moment(item.modify_date).format('DD/MM/yyyy'),
+    }));
+
+    return res.render('usersToRoles', {
+      title: 'Usuarios de ' + name,
+      users: dataFormat || [],
+      name: name,
+    });
+  } catch (error) {
+    res.render('usersToRoles', {
+      title: 'Lista de Usuarios',
+      message: error.message,
+    });
+  }
+});
+
+router.get('/rolesUsers', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { user, database } = req.query;
+
+  try {
+    const roles = await sequelize(username, password, database)
+      .query(`
+        SELECT 
+          name AS Role_Name,
+          ISNULL(principal_id, 0) AS Principal_ID
+        FROM 
+          sys.database_principals
+        WHERE 
+          type = 'R'
+      `, {
+        type: QueryTypes.SELECT,
+      });
+
+    const rolesByUser = await sequelize(username, password, database)
+      .query(`
+        SELECT r.name, r.principal_id
+        FROM sys.database_principals p
+        JOIN sys.database_role_members rm ON p.principal_id = rm.member_principal_id
+        JOIN sys.database_principals r ON rm.role_principal_id = r.principal_id
+        WHERE p.name = '${user}';
+      `, {
+        type: QueryTypes.SELECT,
+      });
+
+    const rolesFormat = roles.filter(item => !rolesByUser.some(i => i.principal_id == item.Principal_ID));
+    console.log(roles);
+    return res.render('rolesUsers', {
+      title: 'Roles de ' + user,
+      roles: rolesFormat || [],
+      rolesBy: rolesByUser || [],
+      user,
+      database,
+    });
+  } catch (error) {
+    return res.render('rolesUsers', {
+      title: 'Roles de ' + user,
+      message: error.message,
+      user,
+      database,
+    });
+  }
+});
+
+router.get('/deleteRol', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { user, rol, database } = req.query;
+
+  try {
+    await sequelize(username, password, database)
+      .query(`ALTER ROLE ${rol} DROP MEMBER ${user}`, {
+        type: QueryTypes.UPDATE,
+      });
+    return res.redirect(`/rolesUsers?database=${database}&user=${user}`);
+  } catch(e) {
+    return res.render('rolesUsers', {
+      title: 'Roles de ' + user,
+      message: e.message,
+      user,
+    });
+  }
+});
+
+router.get('/addRol', async (req, res) => {
+  const password = localStorage.getItem('password');
+  const username = localStorage.getItem('username');
+  const { user, rol, database } = req.query;
+
+  try {
+    await sequelize(username, password, database)
+      .query(`ALTER ROLE ${rol} ADD MEMBER ${user}`, {
+        type: QueryTypes.UPDATE,
+      });
+    return res.redirect(`/rolesUsers?database=${database}&user=${user}`);
+  } catch(e) {
+    return res.render('rolesUsers', {
+      title: 'Roles de ' + user,
+      message: e.message,
+      user,
     });
   }
 });

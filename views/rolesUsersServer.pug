@@ -21,7 +21,7 @@ block main
                   td #{item.name}
                   td 
                     div
-                      a.btn.btn-danger.mx-1(href='/deleteRol?rol='+item.name+'&user='+user+'&database='+database) Quitar
+                      a.btn.btn-danger.mx-1(href='/deleteRolServer?rol='+item.name+'&user='+user) Quitar
       div.col-6
         hr
         div.my-custom-scrollbar.table-wrapper-scroll-y
@@ -37,4 +37,4 @@ block main
                   td #{item.Role_Name}
                   td 
                     div
-                      a.btn.btn-success.mx-1(href='/addRol?rol='+item.Role_Name+'&user='+user+'&database='+database) Agregar
+                      a.btn.btn-success.mx-1(href='/addRolServer?rol='+item.Role_Name+'&user='+user) Agregar
