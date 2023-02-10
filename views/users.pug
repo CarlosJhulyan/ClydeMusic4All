@@ -3,13 +3,12 @@ extends dashboard
 block main
   div.add
     h1=title
-    //a.btn.btn-primary.mx-1(href='/assignDatabase/'+item.name) ADD NEW USERS
-    a.btn.btn-primary(href='/newUsers/') ADD NEW USERS
+    a.btn.btn-primary(href='/newUsers') Nuevo usuario
   hr
   div.ocultaTabla
     if error
       div.alert.alert-danger(role='alert') #{error}
-    if message
+    else if message
       div.alert.alert-danger(role='alert') #{message}
       button(type='button' class='btn btn-' + btnType + ' btn-' + btnSize)
     else
